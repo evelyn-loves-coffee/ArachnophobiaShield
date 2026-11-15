@@ -82,36 +82,7 @@ function U.IsSpider(unit)
 		end
 	end
 
-	-- 3. Fallback: name fragments + user extraNames (units reporting no
-	--    family). Matching is case-INsensitive (the built-in fragments are
-	--    lowercase, unit names are not) and uses plain find, never Lua pattern
-	--    matching - these lists contain user data, "%", "-" and "(" are common
-	--    in NPC names.
-	if not isSpider then
-		local name
-		if UnitName then
-			name = A.Query(UnitName, unit)
-		elseif GetUnitName then
-			name = A.Query(GetUnitName, unit)
-		end
-		if type(name) == "string" then
-			local lower = name:lower()
-			for _, pat in ipairs(namePatterns()) do
-				if lower:find(pat, 1, true) then
-					isSpider = true
-					break
-				end
-			end
-			if not isSpider then
-				for _, extra in ipairs(s.extraNames or {}) do
-					if type(extra) == "string" and lower == extra:lower() then
-						isSpider = true
-						break
-					end
-				end
-			end
-		end
-	end
+
 
 	if not isSpider then
 		return false

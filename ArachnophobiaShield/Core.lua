@@ -19,7 +19,7 @@ Client facts (see docs/HANDOFF.md, verified in-client 2026-10-13):
 ]]
 
 ArachnophobiaShield = ArachnophobiaShield or {}
-ArachnophobiaShield.version = "1.1.0"
+ArachnophobiaShield.version = "1.2.0"
 local A = ArachnophobiaShield.Access
 
 ArachnophobiaShield.hidden = nil  -- panic-hide seam (M4); true hides every cover
@@ -58,8 +58,6 @@ local DEFAULTS = {
 	-- ADDITIONAL name fragments on top of the built-in list
 	-- (Units.NAME_PATTERNS). Empty by default: the built-in list already
 	-- carries the spider vocabulary.
-	namePatterns = {},
-	extraNames = {},
 	requireHostile = false,
 	minLevel = 1,
 	maxLevel = 99,
