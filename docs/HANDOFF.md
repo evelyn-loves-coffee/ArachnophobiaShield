@@ -1,11 +1,14 @@
 # Handoff (maintainer)
 
-**Current: v1.1.0** — creature-ID database removed (it was a
+**Current: v1.2.0** — name matching removed (a "Lake Creeper" matched
+the built-in `creeper` fragment and was covered although it is not a
+spider): detection is creature family `Spider` (3) only, and the
+`namePatterns` / `extraNames` settings tables are gone; the
+`/as name` / `/as names` / `/as forget` commands still manage a local
+name list (SavedVariables; never uploaded) but it no longer affects
+coverage. v1.1.0: creature-ID database removed (it was a
 NoSpider-derived compilation, and the level cap blocked the in-game
-family audit that would have verified it): detection is now creature
-family `Spider` (3) → built-in name fragments → owner extra-names
-(`/as name`, local-only, never uploaded); coverage is best-effort and
-user entries rebuild the database from first-hand observation. v1.0.0:
+family audit that would have verified it). v1.0.0:
 `/as scale` band widened to 40–130 (100 = default, stored 0.4–1.3);
 `/as selftest` trimmed to live state (the constant `mode` and
 `fallbackSize` fields are gone; `limited` / `paused` remain). Bare `/as` mirrors `/as help`; `/as version` and
@@ -31,17 +34,18 @@ replacement; live swaps are acceptable to the owner with `/reload`.
 - 24-slot pool; reverse ownership map prevents a recycled slot from being
   adopted by another unit; rejected cleanup quarantines a slot; repeated
   failures pause tracking (`/as enable` retries).
-- Recognition: creature family `Spider` (3) → built-in name fragments
-  → owner extra-names (`/as name`). Best-effort by design: detection
-  relies on the in-game family identifier, and some spider-like
-  creatures (e.g. Crypt Horror, filed outside Spider) go unidentified.
-  No creature-ID database is bundled (the 124-ID list was removed
-  post-1.0: it was a NoSpider-derived compilation, and the level cap
-  prevented the in-game audit that would have verified it entry-by-
-  entry). `/as name` entries are local-only (SavedVariables; never
-  uploaded or transmitted) and seed the rebuild of coverage from
-  first-hand observation — the author adds instances of enemy units as
-  the game is explored. Player units excluded.
+- Recognition: creature family `Spider` (3) only. Best-effort by
+  design: detection relies on the in-game family identifier, and some
+  spider-like creatures (e.g. Crypt Horror, filed outside Spider) go
+  unidentified. v1.2.0 removed the name-fragment fallback and the
+  extraNames layer (the Lake Creeper incident: fragment matching kept
+  covering non-spiders); no creature-ID database is bundled either
+  (the 124-ID list was removed post-1.0: it was a NoSpider-derived
+  compilation, and the level cap prevented the in-game audit that
+  would have verified it entry-by-entry). `/as name` / `/as names` /
+  `/as forget` still manage a local name list (SavedVariables; never
+  uploaded or transmitted) but the list no longer affects coverage.
+  Player units excluded.
 - Covers are always fully opaque (the client's distance fade makes any
   opacity control fiction — see constraints below).
 - Picker: `/as config` opens an explicit window (the only input-taking
@@ -106,8 +110,8 @@ mouseover detection (owner rule).
 ## Data sources
 
 No creature database, zone/sub-zone tables or spawn datasets are
-bundled; detection is creature family + name fragments + owner
-extra-names, none of which require external data. If general area
+bundled; detection is the in-client creature-family signal only, so
+no external data of any kind is required. If general area
 metadata ever becomes necessary, **LibTourist Classic Era (MIT)** remains
 the selected source; Questie data and Wowhead-derived bulk spawn tables
 remain excluded (license). NoSpider is design inspiration only — no code
@@ -140,7 +144,7 @@ with the consolidation; kept in Git).
    update immediately; world shows through cover corners. Close it:
    input returns to the game; choice persists after reload.
 5. Observed spider death: centered click-through warning, gone in ~1.75 s.
-6. `/as scale 120` / `/as drop 1.25` / an extra name, then `/as reset`:
+6. `/as scale 120` / `/as drop 1.25`, then `/as reset`:
    defaults return (charcoal, scale 100) and persist after reload.
 
 ## Files and offline verification

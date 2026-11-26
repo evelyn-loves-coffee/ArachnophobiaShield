@@ -317,51 +317,46 @@ check(ArachnophobiaShield.Units.IsSpider("p2") == false,
 	"predicate: same name as the player is never covered (name guard)")
 check(ArachnophobiaShield.Units.IsSpider("t") == true,
 	"predicate: spider detection unaffected by a known player unit")
+-- v1.2.0: name matching is retired (the "Lake Creeper" incident: fragment
+-- matching kept covering non-spiders). A name alone - spider vocabulary or
+-- a saved extra name - no longer covers a unit; only the client's Spider
+-- family (id 3) does.
 clearUnits()
 setUnit("t2", { name = "Gloomweaver", level = 5 })
-check(ArachnophobiaShield.Units.IsSpider("t2") == true, "predicate: name pattern Gloomweaver")
+check(ArachnophobiaShield.Units.IsSpider("t2") == false, "predicate: spider-vocabulary name alone is not covered (v1.2.0)")
 setUnit("t3", { name = "Big Bad Spider", level = 10 })
-check(ArachnophobiaShield.Units.IsSpider("t3") == true, "predicate: name contains Spider")
+check(ArachnophobiaShield.Units.IsSpider("t3") == false, "predicate: spider name without family confirmation is not covered")
 ArachnophobiaShieldSettings.extraNames = { "Skitterclaw" }
 setUnit("t4", { name = "Skitterclaw", level = 3 })
-check(ArachnophobiaShield.Units.IsSpider("t4") == true, "predicate: extraNames exact match")
+check(ArachnophobiaShield.Units.IsSpider("t4") == false, "predicate: saved extra names no longer affect detection")
 ArachnophobiaShieldSettings.extraNames = {}
 
--- ---- detection layers: family -> built-in fragments -> extraNames ------
--- Family 3 is primary. A creature filed outside the Spider family whose
--- name gives nothing away is NOT covered by family or fragments; the
--- owner's escape hatch for those is /as name (exact name, per character).
--- The real "Moss Stalker" is Spider family (owner, in-game) and is
--- covered by layer 1; this fixture models a Beast-family creature whose
--- name gives nothing away.
+-- ---- detection: creature family only (v1.2.0) ---------------------------
+-- v1.2.0 retired the name-fragment and extraNames fallbacks: fragment
+-- matching kept covering non-spiders ("Lake Creeper" matched the built-in
+-- "creeper" fragment), so only creatures the client files as Spider family
+-- (id 3) are covered. Coverage is best-effort from the family signal alone;
+-- a spider-like creature filed outside the family (a "Crypt Horror") goes
+-- unidentified.
 setUnit("d1", { name = "Moss Crawler", level = 12, famName = "Beast", famId = 1 })
 check(ArachnophobiaShield.Units.IsSpider("d1") == false,
-	"layers: family-Beast creature with no spider word in the name is not covered")
+	"layers: family-Beast creature is not covered")
 ArachnophobiaShieldSettings.extraNames = { "Moss Crawler" }
-check(ArachnophobiaShield.Units.IsSpider("d1") == true,
-	"layers: /as name (extraNames) recovers a family-Beast creature")
+check(ArachnophobiaShield.Units.IsSpider("d1") == false,
+	"layers: a saved extra name cannot recover a family-Beast creature (v1.2.0)")
 ArachnophobiaShieldSettings.extraNames = {}
 setUnit("d2", { name = "Crypt Horror", level = 50 })
 check(ArachnophobiaShield.Units.IsSpider("d2") == false,
-	"layers: no creature family and no fragment in the name -> not covered")
+	"layers: no creature family -> not covered")
 setUnit("d4", { name = "Young Scavenger", level = 24, famName = "Beast", famId = 1 })
 check(ArachnophobiaShield.Units.IsSpider("d4") == false,
-	"layers: a non-spider beast is not covered by name or family")
+	"layers: a non-spider beast is not covered")
 setUnit("d5", { name = "Ash Spider", level = 20, famName = "Beast", famId = 1 })
-check(ArachnophobiaShield.Units.IsSpider("d5") == true,
-	"layers: a non-spider-family creature with a spider name fragment is covered")
+check(ArachnophobiaShield.Units.IsSpider("d5") == false,
+	"layers: a spider-named creature filed outside the Spider family is not covered (v1.2.0)")
 setUnit("d6", { name = "WEBWOOD LURKER", level = 20 })
-check(ArachnophobiaShield.Units.IsSpider("d6") == true, "layers: fragments match case-insensitively")
-
--- settings.namePatterns is ADDITIVE (user fragments are unioned on top of
--- the built-in list; replacing would drop them).
-ArachnophobiaShieldSettings.namePatterns = { "Arachnid" }
-setUnit("d7", { name = "Giant Arachnid", level = 10 })
-check(ArachnophobiaShield.Units.IsSpider("d7") == true, "layers: user fragments are honoured")
-setUnit("d8", { name = "Webwood Silkspinner", level = 20 })
-check(ArachnophobiaShield.Units.IsSpider("d8") == true,
-	"layers: built-in fragments still work while user fragments are set")
-ArachnophobiaShieldSettings.namePatterns = {}
+check(ArachnophobiaShield.Units.IsSpider("d6") == false,
+	"layers: name fragments are no longer matched (v1.2.0)")
 clearUnits()
 
 -- ---- /as name | names | forget (owner escape hatch) -----------------
@@ -369,8 +364,8 @@ out = capture(function() SlashCmdList["AS"](" name Anconan Spider ") end)
 check(ArachnophobiaShieldSettings.extraNames[1] == "Anconan Spider" and #out == 1,
 	"name: adds an exact creature name")
 setUnit("n1", { name = "anconan spider", level = 20 })
-check(ArachnophobiaShield.Units.IsSpider("n1") == true,
-	"name: the named creature is covered straight away (case-insensitive)")
+check(ArachnophobiaShield.Units.IsSpider("n1") == false,
+	"name: the named creature is NOT covered by its name alone (v1.2.0)")
 out = capture(function() SlashCmdList["AS"](" name Anconan Spider ") end)
 check(#ArachnophobiaShieldSettings.extraNames == 1 and out[1]:find("already on your") ~= nil,
 	"name: duplicates refused instead of growing the list")
@@ -1340,13 +1335,13 @@ check(ArachnophobiaShieldSettings.version == 5 and ArachnophobiaShieldSettings.e
     and ArachnophobiaShieldSettings.trackRelease == 0.5
     and ArachnophobiaShieldSettings.nearBoost == 3.0 and ArachnophobiaShieldSettings.requireHostile == false
     and ArachnophobiaShieldSettings.minLevel == 1 and ArachnophobiaShieldSettings.maxLevel == 99
-    and #ArachnophobiaShieldSettings.extraNames == 0 and #ArachnophobiaShieldSettings.namePatterns == 0
     and ArachnophobiaShieldSettings.debug == false, "reset: every saved setting returns to the factory default")
 check(ArachnophobiaShieldSettings.autoTrack == nil and ArachnophobiaShieldSettings.stickyCovers == nil
     and ArachnophobiaShieldSettings.parkCount == nil and ArachnophobiaShieldSettings.arrange == nil
     and ArachnophobiaShieldSettings.covers == nil and ArachnophobiaShieldSettings.color == nil
     and ArachnophobiaShieldSettings.opacity == nil
-    and ArachnophobiaShieldSettings.nearThreshold == nil,
+    and ArachnophobiaShieldSettings.nearThreshold == nil
+    and ArachnophobiaShieldSettings.extraNames == nil and ArachnophobiaShieldSettings.namePatterns == nil,
     "reset: retired settings are not reintroduced")
 check(ArachnophobiaShield.debug == false and ArachnophobiaShield.autoSuspended == false
     and ArachnophobiaShield.trackFailures == 0 and ArachnophobiaShield.tickErrors == 0,

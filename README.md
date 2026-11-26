@@ -5,7 +5,7 @@ that covers spider models with a nameplate-attached UI element. UI-layer
 only: no model swaps, no game-file modification. Covers are always
 click-through and always fully opaque.
 
-**Status: v1.1.0.** This README documents current behavior only; the
+**Status: v1.2.0.** This README documents current behavior only; the
 change history lives in Git.
 
 ## How it works
@@ -71,7 +71,7 @@ uv run --with lupa python tools/package_addon.py
 ```
 
 The build writes `dist/ArachnophobiaShield-<version>-fixed.zip`
-(currently `dist/ArachnophobiaShield-1.1.0-fixed.zip`), validates the
+(currently `dist/ArachnophobiaShield-1.2.0-fixed.zip`), validates the
 package contents and prints its SHA-256 and size.
 
 **Deploy:** unzip the ZIP directly into your game's
@@ -117,9 +117,9 @@ disabled after reload).
 | `/as toggle` | switch between enabled tracking and disabled covers |
 | `/as scale [N]` | cover size as a **percentage** of the nameplate width, whole number `40`–`130`, `100` = default |
 | `/as drop [N]` | how far below the nameplate it sits (`0`–`4`, default `0.3`) |
-| `/as name <name>` | "cover this one too": add an **exact** creature name (spaces allowed) |
-| `/as names` | list the names you added |
-| `/as forget <name>` | remove one you added |
+| `/as name <name>` | add an **exact** creature name to a local list (spaces allowed); as of v1.2.0 the list no longer affects coverage (detection is family-only) |
+| `/as names` | list the names in the local list |
+| `/as forget <name>` | remove a name from the local list |
 | `/as reset` | restore every saved setting to its factory default and reapply |
 | `/as debug [on\|off]` | verbose decisions for bug reports (off by default) |
 | `/as help` | usage |
@@ -128,26 +128,26 @@ disabled after reload).
 
 ## How a spider is recognised
 
-1. **Creature family** `Spider` (id 3) — the primary signal; the addon
-   does its best to detect from the in-game family identifier, which
-   covers every creature the game itself files as a spider.
-2. **Name fragments** (`spider`, `tarantula`, `webspinner`, `widow`,
-   `skitterer`, `webwood`, …, case-insensitive) — for units whose family
-   read is unavailable.
-3. **Extra names** — an exact-name list you build with
-   `/as name <exact name>` (per character).
+A creature is covered only when the client files it as creature family
+**`Spider`** (id 3) — the addon's sole detection signal as of v1.2.0.
+That covers every creature the game itself files as a spider, and
+nothing else.
 
-Detection is **best-effort**: some spider-like creatures may not be
-identified — a creature filed outside the Spider family whose name gives
-nothing away (for example, a "Crypt Horror") is invisible to layers 1
-and 2. When you spot one, `/as name <exact name>` adds it permanently.
+v1.2.0 retired the earlier fallbacks — name fragments (`spider`,
+`tarantula`, `webspinner`, `widow`, `skitterer`, `webwood`, …) and the
+`/as name` extra-name list: fragment matching kept covering non-spiders
+(a "Lake Creeper" matched the `creeper` fragment), so coverage is now
+strictly family-based. The `/as name` / `/as names` / `/as forget`
+commands still manage the local name list, but the list no longer
+affects coverage.
 
-**Everything stays local.** `/as name` entries are stored only in the
-addon's SavedVariables on your machine; they are never uploaded,
-transmitted or reported anywhere. The author will do their best to add
-instances of enemy units as the game is explored, so coverage can be
-rebuilt from scratch out of first-hand observation over time. Player
+Detection is **best-effort**: a spider-like creature filed outside the
+Spider family (for example, a "Crypt Horror") goes unidentified. Player
 units are excluded.
+
+**Everything stays local.** The name list and all settings are stored
+only in the addon's SavedVariables on your machine; they are never
+uploaded, transmitted or reported anywhere.
 
 ## Custom cover images
 
@@ -201,10 +201,9 @@ zone tables, spawn coordinates or creature lists have been copied or
 bundled; its native parent-and-anchor overlay approach informed this
 implementation.
 
-No creature database is bundled: detection relies on in-client signals
-(creature family, name matching) and the owner's own extra-name list.
-No zone tables or spawn datasets are bundled or required for the
-nameplate overlay.
+No creature database is bundled: detection relies solely on the
+client's creature-family signal. No zone tables or spawn datasets are
+bundled or required for the nameplate overlay.
 
 ## Developer documentation
 
